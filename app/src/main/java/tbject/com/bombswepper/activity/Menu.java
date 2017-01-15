@@ -1,17 +1,23 @@
 package tbject.com.bombswepper.activity;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
+import android.content.DialogInterface;
 import android.graphics.Point;
+import android.location.Location;
+import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.content.Intent;
+import android.test.mock.MockPackageManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
+import android.widget.TabHost;
+import android.app.TabActivity;
+import android.widget.TabHost.OnTabChangeListener;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -25,89 +31,104 @@ import tbject.com.bombswepper.PlayerComparator;
 import tbject.com.bombswepper.R;
 import tbject.com.bombswepper.pojo.Level;
 import tbject.com.bombswepper.pojo.Player;
+import tbject.com.bombswepper.services.LocationService;
 
+public class Menu extends TabActivity implements OnTabChangeListener{
 
-public class Menu extends CommonActivity {
-    public static ArrayList<Player> players=new ArrayList<>();
-    public static Level gameLevel;
-    public static Point screenSize;
+    private static Menu instance;
+    private ArrayList<Player> players=new ArrayList<>();
+    private Level gameLevel;
+
+    public Point screenSize;
     private final String DATA_FILE="data.txt";
+    private LocationService gps;
+
+
+
+    private Location gameLocation;
+    private TabHost tabHost;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_game);
+        //hide android upper bar
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.activity_menu);
         setScreenSize();
+        instance=this;
         readDataFile();
-        insertPlayerToTable();
+        initLocationService();
+        initTabs();
+
     }
+
     @Override
-    protected void onRestart() {
-        super.onRestart();
-        insertPlayerToTable();
+    public void onTabChanged(String tabId) {
+
     }
+
     @Override
     protected void onPause() {
         super.onPause();
         saveDataFile();
     }
+
+    private void initTabs(){
+        // Get TabHost Refference
+        tabHost = getTabHost();
+
+        // Set TabChangeListener called when tab changed
+        tabHost.setOnTabChangedListener(this);
+
+        TabHost.TabSpec spec;
+        Intent intent;
+
+        // Create  Intents to launch an Activity for the tab (to be reused)
+        intent = new Intent().setClass(this, WinnerTableTab.class);
+        spec = tabHost.newTabSpec("First").setIndicator("Table")
+                .setContent(intent);
+        //Add intent to tab
+        tabHost.addTab(spec);
+
+        intent = new Intent().setClass(this, MapTab.class);
+        spec = tabHost.newTabSpec("Second").setIndicator("Map")
+                .setContent(intent);
+        tabHost.addTab(spec);
+
+        tabHost.getTabWidget().setCurrentTab(0);
+    }
+
+    public void initGameTable(View view){
+        Button button =(Button)view;
+        gameLevel=Level.valueOf(button.getText().toString());
+        gameLocation=getCurrentLocation();
+    }
+
     private void setScreenSize(){
         Display display = getWindowManager().getDefaultDisplay();
         screenSize = new Point();
         display.getSize(screenSize);
     }
 
-    public void initGameTable(View view){
-        Button button =(Button)view;
-        gameLevel=Level.valueOf(button.getText().toString());
-        Intent intent = new Intent(this, TableGame.class);
-        startActivity(intent);
+    private Location getCurrentLocation(){
+        gps = new LocationService(this);
+        // check if GPS enabled
+        if(gps.canGetLocation()){
+            Intent intent = new Intent(Menu.getInstance(), GameInstance.class);
+            startActivity(intent);
+            return gps.getLocation();
+                    /* double latitude = gps.getLatitude();
+                    double longitude = gps.getLongitude();
 
-    }
-
-    public void insertPlayerToTable() {
-        TableLayout tableLayout= (TableLayout) findViewById(R.id.score_table_layout);
-        tableLayout.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-        if (tableLayout.getChildCount() >1) {
-            View mainRow = tableLayout.getChildAt(0);
-            tableLayout.removeAllViews();
-            tableLayout.addView(mainRow);
-        }
-
-        for (int i=0;i<players.size();i++){
-
-            TableRow tableRow=new TableRow(this);
-            if (i%2==0)
-                tableRow.setBackgroundColor(Color.parseColor("#d4e3fc"));
-            else
-                tableRow.setBackgroundColor(Color.parseColor("#76ABF9"));
-            TextView name=initTableTextView();
-            name.setText(players.get(i).getName());
-            name.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            name.setTextSize(18);
-
-            TextView time=initTableTextView();
-            time.setText(players.get(i).getTime()+"");
-            time.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            time.setTextSize(18);
-
-            TextView level=initTableTextView();
-            level.setText(players.get(i).getLevel().toString());
-            level.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            level.setTextSize(18);
-            tableRow.addView(name);
-            tableRow.addView(level);
-            tableRow.addView(time);
-            tableLayout.addView(tableRow);
+                    // \n is for new line
+                    Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
+                            + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();*/
+        }else{
+            gps.showSettingsAlert();
+            return null;
         }
     }
-    private TextView initTableTextView(){
-        TextView textView=new TextView(this);
-        textView.setTextColor(Color.BLACK);
-        textView.setTextSize(18);
-        return textView;
-    }
-
     /**
      * readDataFile method - read data file and create list of players;
      */
@@ -115,7 +136,7 @@ public class Menu extends CommonActivity {
         try {
             players.clear();
             FileInputStream file=openFileInput(DATA_FILE);
-                        BufferedReader br = new BufferedReader(new InputStreamReader(file));
+            BufferedReader br = new BufferedReader(new InputStreamReader(file));
             String line;
             while ((line=br.readLine())!=null){
                 String [] playerString=line.split(",");
@@ -150,9 +171,8 @@ public class Menu extends CommonActivity {
         players.add(player3);
 
     }
-
     /**
-     * saveDataFile method - save list of player to data file with "," sprate
+     saveDataFile method - save list of player to data file with "," sprate
      */
     private void saveDataFile(){
         try {
@@ -164,6 +184,61 @@ public class Menu extends CommonActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+        if (ActivityCompat.checkSelfPermission(Menu.getInstance(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != MockPackageManager.PERMISSION_GRANTED){
+            if (ActivityCompat.checkSelfPermission(Menu.getInstance(), Manifest.permission.ACCESS_FINE_LOCATION)
+                    != MockPackageManager.PERMISSION_GRANTED) {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(Menu.getInstance());
+                alertDialog.setTitle("Location services required permissions");
+                alertDialog.setMessage("Application will be closed");
+                alertDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        System.exit(1);
+                    }
+                });
+                alertDialog.show();
+            }
+        }
+    }
+
+    private void initLocationService(){
+        int REQUEST_CODE_PERMISSION = 2;
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != MockPackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_CODE_PERMISSION);
+            }else{
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public static Menu getInstance() {
+        return instance;
+    }
+
+    public ArrayList<Player> getPlayers() {
+        return players;
+    }
+
+    public Level getGameLevel() {
+        return gameLevel;
+    }
+
+    public Location getGameLocation() {
+        return gameLocation;
+    }
+    public Point getScreenSize() {
+        return screenSize;
     }
 
 }

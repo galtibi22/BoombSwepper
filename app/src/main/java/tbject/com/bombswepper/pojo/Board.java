@@ -14,7 +14,7 @@ public class Board {
         columns=level.getNumOfBox();
         rows=level.getNumOfBox();
         bombs=level.getNumOfBomb();
-        sizeOfBox= Menu.screenSize.x/level.getNumOfBox();
+        sizeOfBox= Menu.getInstance().getScreenSize().x/level.getNumOfBox();
         boxes=new Box[rows][columns];
     }
     /**

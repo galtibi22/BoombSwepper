@@ -6,7 +6,7 @@ import android.widget.Button;
 import java.util.ArrayList;
 import java.util.Random;
 
-import tbject.com.bombswepper.activity.TableGame;
+import tbject.com.bombswepper.activity.GameInstance;
 import tbject.com.bombswepper.pojo.Board;
 import tbject.com.bombswepper.pojo.Box;
 import tbject.com.bombswepper.pojo.Level;
@@ -15,7 +15,7 @@ import tbject.com.bombswepper.pojo.Position;
 
 public class BoardManager {
    
-    private TableGame tableGame=TableGame.getInstance();
+    private GameInstance tableGame= GameInstance.getInstance();
     private Board board;
     private ArrayList<Position> boxQueue;
     private int numOfOpenBox;

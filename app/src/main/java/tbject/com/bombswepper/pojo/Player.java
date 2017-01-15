@@ -1,10 +1,22 @@
 package tbject.com.bombswepper.pojo;
 
+import android.location.Location;
+
 public class Player{
 
     private String name;
     private Level level;
     private Integer time;
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
+    private Location location;
 
     public Level getLevel() {
         return level;

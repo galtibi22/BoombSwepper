@@ -20,7 +20,7 @@ public class OpenPage extends CommonActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent i = new Intent(OpenPage.this, Menu.class);
+                Intent i = new Intent(OpenPage.this, MainAccelerometer.class);
                 startActivity(i);
                 finish();
             }

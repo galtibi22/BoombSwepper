@@ -16,6 +16,8 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import tbject.com.bombswepper.activity.Menu;
 
 public class LocationService extends Service implements LocationListener {
@@ -48,7 +50,7 @@ public class LocationService extends Service implements LocationListener {
         getLocation();
     }
 
-    public Location getLocation() {
+    public LatLng getLocation() {
         try {
             locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
             //check permission to location
@@ -62,27 +64,6 @@ public class LocationService extends Service implements LocationListener {
                     // no network provider is enabled
                 } else {
                     this.canGetLocation = true;
-                    // First get location from Network Provider
-                    if (isNetworkEnabled) {
-
-                        locationManager.requestLocationUpdates(
-                                LocationManager.NETWORK_PROVIDER,
-                                MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-
-                        Log.d("Network", "Network");
-                        if (locationManager != null) {
-                            location = locationManager
-                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                            }
-
-                        }
-                    }
-
                     // if GPS Enabled get lat/long using GPS Services
                     if (isGPSEnabled) {
                         if (location == null) {
@@ -103,13 +84,32 @@ public class LocationService extends Service implements LocationListener {
                             }
                         }
                     }
+                    // if gps not working get location from Network Provider
+                    if (isNetworkEnabled && !isGPSEnabled) {
+                        locationManager.requestLocationUpdates(
+                                LocationManager.NETWORK_PROVIDER,
+                                MIN_TIME_BW_UPDATES,
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+
+                        Log.d("Network", "Network");
+                        if (locationManager != null) {
+                            location = locationManager
+                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+                            if (location != null) {
+                                latitude = location.getLatitude();
+                                longitude = location.getLongitude();
+                            }
+
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return location;
+        LatLng loc=new LatLng(location.getLatitude(),location.getLongitude());
+        return loc;
     }
 
     /**

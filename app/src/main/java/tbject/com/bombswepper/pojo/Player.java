@@ -1,22 +1,13 @@
 package tbject.com.bombswepper.pojo;
 
-import android.location.Location;
+import com.google.android.gms.maps.model.LatLng;
 
 public class Player{
 
     private String name;
     private Level level;
     private Integer time;
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
-    private Location location;
+    private LatLng location;
 
     public Level getLevel() {
         return level;
@@ -42,8 +33,19 @@ public class Player{
         this.name = name;
     }
 
+    public LatLng getLocation() {
+        return location;
+    }
+
+    public void setLocation(LatLng location) {
+        this.location = location;
+    }
+
+
     public String toString(){
-        return this.getName()+","+this.getTime()+","+this.getLevel();
+        return this.getName()+","+this.getTime()+","+this.getLevel()+","+this.getLocation().latitude +" ," +this.getLocation().longitude;
     }
 }
+
+
 

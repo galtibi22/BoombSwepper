@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 
 import java.util.Collections;
 
+import tbject.com.bombswepper.AccelerometerListener;
 import tbject.com.bombswepper.BoardManager;
 import tbject.com.bombswepper.PlayerComparator;
 import tbject.com.bombswepper.R;
@@ -25,7 +27,7 @@ import tbject.com.bombswepper.pojo.Player;
 import tbject.com.bombswepper.services.TimerService;
 
 
-public class GameInstance extends CommonActivity {
+public class GameInstance extends CommonActivity implements AccelerometerListener {
     private TimerService timerService;
     private AlertDialog alertDialog;
     private static GameInstance instance;
@@ -219,6 +221,75 @@ public class GameInstance extends CommonActivity {
         GameInstance.getInstance().finish();
     }
 
+    int numOfBomb=0;
+    private final double INTERVAL=1;
+    private final double DEVIIATION=1.3;
+    float startX;
+    float startY;
+    float startZ;
+    float lastX;
+    float lastY;
+    float lastZ;
+    boolean first=true;
+
+    @Override
+    public void onAccelerationChanged(float x, float y, float z) {
+        if (first){
+            startX=x;startY=y;startZ=z;
+            first=false;
+        }
+        if (x >  startX)
+            if (x> lastX+INTERVAL) {
+                numOfBomb++;
+                lastX=x;
+                Log.w("Pos","add bomb");
+                Log.w("Pos","Num of bomb="+numOfBomb);
+            }else if (x<lastX-INTERVAL/DEVIIATION){
+                if (numOfBomb>0)
+                    numOfBomb--;
+                lastX=x;
+                Log.w("Pos","remove bomb");
+                Log.w("Pos","Num of bomb="+numOfBomb);
+            }
+        if (x < startX)
+            if (x< lastX-INTERVAL) {
+                numOfBomb++;
+                lastX=x;
+                Log.w("Pos","add bomb");
+                Log.w("Pos","Num of bomb="+numOfBomb);
+            }else if (x>lastX+INTERVAL/DEVIIATION){
+                if (numOfBomb>0)
+                    numOfBomb--;
+                lastX=x;
+                Log.w("Pos","remove bomb");
+                Log.w("Pos","Num of bomb="+numOfBomb);
+            }
+        if (y > INTERVAL + startY)
+            if (y> lastY+INTERVAL) {
+                numOfBomb++;
+                lastY=y;
+                Log.w("Pos","add bomb");
+                Log.w("Pos","Num of bomb="+numOfBomb);
+            }else if (y<lastY-INTERVAL/DEVIIATION){
+                numOfBomb--;
+                lastY=y;
+                Log.w("Pos","remove bomb");
+                Log.w("Pos","Num of bomb="+numOfBomb);
+            }
+        if (y < startY-INTERVAL)
+            if (y< lastY-INTERVAL) {
+                numOfBomb++;
+                lastY=y;
+                Log.w("Pos","add bomb");
+                Log.w("Pos","Num of bomb="+numOfBomb);
+            }else if (y>lastY+INTERVAL/DEVIIATION) {
+                numOfBomb--;
+                lastY = y;
+                Log.w("Pos", "remove bomb");
+                Log.w("Pos", "Num of bomb=" + numOfBomb);
+            }
+    }
+
     public static GameInstance getInstance(){
         return instance;
     }
@@ -238,5 +309,6 @@ public class GameInstance extends CommonActivity {
     public TextView getTimerValue() {
         return timerValue;
     }
+
 
 }

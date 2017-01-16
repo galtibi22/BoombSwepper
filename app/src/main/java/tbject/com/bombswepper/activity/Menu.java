@@ -2,13 +2,13 @@ package tbject.com.bombswepper.activity;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.TabActivity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Point;
-import android.location.Location;
-import android.support.v4.app.ActivityCompat;
-import android.os.Bundle;
 import android.content.Intent;
+import android.graphics.Point;
+import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.test.mock.MockPackageManager;
 import android.util.Log;
 import android.view.Display;
@@ -16,8 +16,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TabHost;
-import android.app.TabActivity;
 import android.widget.TabHost.OnTabChangeListener;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -45,7 +46,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
 
 
 
-    private Location gameLocation;
+    private LatLng gameLocation;
     private TabHost tabHost;
 
     @Override
@@ -55,8 +56,8 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_menu);
-        setScreenSize();
         instance=this;
+        setScreenSize();
         readDataFile();
         initLocationService();
         initTabs();
@@ -91,7 +92,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         //Add intent to tab
         tabHost.addTab(spec);
 
-        intent = new Intent().setClass(this, MapTab.class);
+        intent = new Intent().setClass(this, MapsTab.class);
         spec = tabHost.newTabSpec("Second").setIndicator("Map")
                 .setContent(intent);
         tabHost.addTab(spec);
@@ -111,7 +112,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         display.getSize(screenSize);
     }
 
-    private Location getCurrentLocation(){
+    private LatLng getCurrentLocation(){
         gps = new LocationService(this);
         // check if GPS enabled
         if(gps.canGetLocation()){
@@ -144,6 +145,8 @@ public class Menu extends TabActivity implements OnTabChangeListener{
                 player.setName(playerString[0]);
                 player.setTime(Integer.parseInt(playerString[1]));
                 player.setLevel(Level.valueOf(playerString[2]));
+                LatLng location=new LatLng(Double.parseDouble(playerString[3]),Double.parseDouble(playerString[4]));
+                player.setLocation(location);
                 players.add(player);
             }
         }   catch (Exception e){
@@ -154,18 +157,22 @@ public class Menu extends TabActivity implements OnTabChangeListener{
     }
 
     private void insertDemoData() {
+
         Player player1=new Player();
         player1.setName("Player1");
         player1.setTime(1000);
         player1.setLevel(Level.EASY);
+        player1.setLocation(new LatLng(32.120045,34.808768));
         Player player2=new Player();
         player2.setName("Player2");
         player2.setTime(2000);
         player2.setLevel(Level.MEDIUM);
+        player2.setLocation(new LatLng(32.137877,34.804383));
         Player player3=new Player();
         player3.setName("Player3");
         player3.setTime(3000);
         player3.setLevel(Level.HARD);
+        player3.setLocation(new LatLng(32.137088,34.798669));
         players.add(player1);
         players.add(player2);
         players.add(player3);
@@ -221,7 +228,6 @@ public class Menu extends TabActivity implements OnTabChangeListener{
 
     }
 
-
     public static Menu getInstance() {
         return instance;
     }
@@ -234,7 +240,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         return gameLevel;
     }
 
-    public Location getGameLocation() {
+    public LatLng getGameLocation() {
         return gameLocation;
     }
     public Point getScreenSize() {

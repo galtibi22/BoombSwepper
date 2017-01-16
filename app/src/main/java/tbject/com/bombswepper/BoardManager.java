@@ -15,19 +15,22 @@ import tbject.com.bombswepper.pojo.Position;
 
 public class BoardManager {
    
-    private GameInstance tableGame= GameInstance.getInstance();
+    private GameInstance gameInstance = GameInstance.getInstance();
     private Board board;
     private ArrayList<Position> boxQueue;
     private int numOfOpenBox;
     private int numOfFlag;
-
+    private ArrayList<Box> boxAddBombs;
+    private ArrayList<Box> boxClosed;
     public BoardManager(){
     }
 
     public void initBoard(Level level) {
         boxQueue=new ArrayList<>();
+        boxClosed=new ArrayList<>();
         board=new Board(level);
         numOfFlag=board.getBombs();
+        boxAddBombs=new ArrayList<>();
         initBoxes();
         placeBombs();
         calculateHints();
@@ -102,8 +105,8 @@ public class BoardManager {
     }
 
     private void initButton(Box box){
-        Button button = new Button(tableGame);
-        button.setBackground(tableGame.getResources().getDrawable(R.drawable.box));
+        Button button = new Button(gameInstance);
+        button.setBackground(gameInstance.getResources().getDrawable(R.drawable.box));
         button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -124,7 +127,7 @@ public class BoardManager {
     public void handleBoxButtonShortClick(View view) {
         Position pos = getPostionFromTag(view.getTag().toString());
         if (getBoard().getBox(pos).getNum() == -1)
-            tableGame.lost();
+            gameInstance.lost();
         else
             openBoxes(pos);
     }
@@ -143,7 +146,7 @@ public class BoardManager {
                 button.setBackgroundResource(R.drawable.box);
                 numOfFlag++;
         }
-        tableGame.getTotalFlagValue().setText(numOfFlag + "");
+        gameInstance.getTotalFlagValue().setText(numOfFlag + "");
         return true;
     }
 
@@ -151,18 +154,32 @@ public class BoardManager {
         Box box = getBoard().getBox(pos);
         if (!box.isOpen() && !box.isFlag()) {
             if (box.getNum() == 0) {
+                Position position;
                 //up
-                if (pos.getRow() > 0)
-                    boxQueue.add(new Position(pos.getRow() - 1, pos.getColumn()));
+                if (pos.getRow() > 0) {
+                    position=new Position(pos.getRow() - 1, pos.getColumn());
+                    if (getBoard().getBox(position).getNum()!=-1)
+                        boxQueue.add(position);
+
+                }
                 //down
-                if (pos.getRow() < getBoard().getRows() - 1)
-                    boxQueue.add(new Position(pos.getRow() + 1, pos.getColumn()));
+                if (pos.getRow() < getBoard().getRows() - 1) {
+                    position = new Position(pos.getRow() + 1, pos.getColumn());
+                    if (getBoard().getBox(position).getNum() != -1)
+                        boxQueue.add(position);
+                }
                 //left
-                if (pos.getColumn() > 0)
-                    boxQueue.add(new Position(pos.getRow(), pos.getColumn() - 1));
+                if (pos.getColumn() > 0){
+                    position = new Position(pos.getRow(), pos.getColumn() - 1);
+                    if (getBoard().getBox(position).getNum() != -1)
+                        boxQueue.add(position);
+                }
                 //right
-                if (pos.getColumn() < getBoard().getColumns() - 1)
-                    boxQueue.add(new Position(pos.getRow(), pos.getColumn() + 1));
+                if (pos.getColumn() < getBoard().getColumns() - 1){
+                    position = new Position(pos.getRow(), pos.getColumn() + 1);
+                    if (getBoard().getBox(position).getNum() != -1)
+                        boxQueue.add(position);
+                }
             }
             openBox(box);
         }
@@ -177,11 +194,11 @@ public class BoardManager {
         if (box.getNum() >= 0 && !box.isFlag()) {
             box.setOpen(true);
             numOfOpenBox++;
-            box.getBoxButton().setBackground(tableGame.getResources().getDrawable(R.drawable.boxclick));
+            box.getBoxButton().setBackground(gameInstance.getResources().getDrawable(R.drawable.boxclick));
             if (box.getNum() > 0)
                 box.getBoxButton().setText(box.getNum() + "");
         }
-        if (box.getNum() >= 0 && tableGame.isLost() && box.isFlag())
+        if (box.getNum() >= 0 && gameInstance.isLost() && box.isFlag())
             box.getBoxButton().setBackgroundResource(R.drawable.flagnegetive);
         if (box.getNum() == -1) {
             box.setOpen(true);
@@ -189,10 +206,61 @@ public class BoardManager {
                 box.getBoxButton().setBackgroundResource(R.drawable.bomb);
         }
         int num = getBoard().getColumns() *  getBoard().getRows();
-        if (!tableGame.isLost() && numOfOpenBox == num -  getBoard().getBombs())
-            tableGame.win();
+        if (!gameInstance.isLost() && numOfOpenBox == num -  getBoard().getBombs())
+            gameInstance.win();
+    }
+    private void closeBox(Box box){
+        box.getBoxButton().setBackground(gameInstance.getResources().getDrawable(R.drawable.box));
+        box.setOpen(false);
+        box.getBoxButton().setText("");
+        numOfOpenBox--;
+    }
 
+    public void addBombAndCloseBox(){
+        boolean successToAddBomb=false;
+        boolean successToCloseBox=false;
+        Random random = new Random(); // this generates random numbers for us
+        while(!successToAddBomb) {
+            int x = random.nextInt(board.getColumns());
+            int y = random.nextInt(board.getRows());
+            Box box = board.getBox(y, x);
+            if (!box.isOpen() && box.getNum() != -1) {
+                box.setOldNum(box.getNum());
+                box.setNum(-1);
+                boxAddBombs.add(box);
+                successToAddBomb = true;
+                GameInstance.getInstance().getNewBombValue().setText(boxAddBombs.size()+"");
+                GameInstance.getInstance().showAToast( "Please return to original position.");
+                getBoard().setBombs(getBoard().getBombs()+1);
+            }
+        }
+        if (numOfOpenBox>0)
+            while (!successToCloseBox){
+                int x = random.nextInt(board.getColumns());
+                int y = random.nextInt(board.getRows());
+                Box box = board.getBox(y, x);
+                if (box.isOpen()){
+                    closeBox(box);
+                    boxClosed.add(box);
+                    successToCloseBox=true;
+                }
+        }
+    }
 
+    public void removeBombAndOpenBox(){
+        if (boxAddBombs.size()>0) {
+            Box box=boxAddBombs.get(boxAddBombs.size()-1);
+            box.setNum(box.getOldNum());
+            boxAddBombs.remove(boxAddBombs.size()-1);
+            GameInstance.getInstance().getNewBombValue().setText(boxAddBombs.size()+"");
+            GameInstance.getInstance().showAToast("Good you start return to original position.");
+            getBoard().setBombs(getBoard().getBombs()-1);
+        }
+        if (boxClosed.size()>0){
+            Box box=boxClosed.get(boxClosed.size()-1);
+            openBox(box);
+            boxClosed.remove(boxClosed.size()-1);
+        }
     }
 
     private Position getPostionFromTag(String tag){
@@ -201,6 +269,8 @@ public class BoardManager {
         pos.setColumn(Integer.parseInt(tag.split("@")[1]));
         return  pos;
     }
+
+
 
    public Board getBoard(){
        return board;

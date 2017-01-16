@@ -33,7 +33,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_easy"
-                android:onClick="initGameTable"
+                android:onClick="initGameInstance"
                 android:background="#C1D0E9"
                 />
 
@@ -42,7 +42,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_medium"
-                android:onClick="initGameTable"
+                android:onClick="initGameInstance"
                 android:background="#76ABF9"/>
 
             <Button
@@ -50,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_hard"
-                android:onClick="initGameTable"
+                android:onClick="initGameInstance"
                 android:background="#0D58CD"/>
         </LinearLayout>
 

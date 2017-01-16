@@ -35,17 +35,14 @@ import tbject.com.bombswepper.pojo.Player;
 import tbject.com.bombswepper.services.LocationService;
 
 public class Menu extends TabActivity implements OnTabChangeListener{
+    public static final int NUM_OF_PLAYERS=10;
 
     private static Menu instance;
     private ArrayList<Player> players=new ArrayList<>();
     private Level gameLevel;
-
     public Point screenSize;
     private final String DATA_FILE="data.txt";
-    private LocationService gps;
-
-
-
+    private LocationService locationService;
     private LatLng gameLocation;
     private TabHost tabHost;
 
@@ -86,7 +83,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         Intent intent;
 
         // Create  Intents to launch an Activity for the tab (to be reused)
-        intent = new Intent().setClass(this, WinnerTableTab.class);
+        intent = new Intent().setClass(this, tableTab.class);
         spec = tabHost.newTabSpec("First").setIndicator("Table")
                 .setContent(intent);
         //Add intent to tab
@@ -100,10 +97,14 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         tabHost.getTabWidget().setCurrentTab(0);
     }
 
-    public void initGameTable(View view){
+    public void initGameInstance(View view){
         Button button =(Button)view;
         gameLevel=Level.valueOf(button.getText().toString());
         gameLocation=getCurrentLocation();
+        if (gameLocation!=null){
+            Intent intent = new Intent(Menu.getInstance(), GameInstance.class);
+            startActivity(intent);
+        }
     }
 
     private void setScreenSize(){
@@ -112,21 +113,13 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         display.getSize(screenSize);
     }
 
-    private LatLng getCurrentLocation(){
-        gps = new LocationService(this);
+    public LatLng getCurrentLocation(){
+        locationService = new LocationService(this);
         // check if GPS enabled
-        if(gps.canGetLocation()){
-            Intent intent = new Intent(Menu.getInstance(), GameInstance.class);
-            startActivity(intent);
-            return gps.getLocation();
-                    /* double latitude = gps.getLatitude();
-                    double longitude = gps.getLongitude();
-
-                    // \n is for new line
-                    Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
-                            + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();*/
+        if(locationService.canGetLocation()){
+            return locationService.getLocation();
         }else{
-            gps.showSettingsAlert();
+            locationService.showSettingsAlert();
             return null;
         }
     }
@@ -145,7 +138,8 @@ public class Menu extends TabActivity implements OnTabChangeListener{
                 player.setName(playerString[0]);
                 player.setTime(Integer.parseInt(playerString[1]));
                 player.setLevel(Level.valueOf(playerString[2]));
-                LatLng location=new LatLng(Double.parseDouble(playerString[3]),Double.parseDouble(playerString[4]));
+                player.setAddress(playerString[3]);
+                LatLng location=new LatLng(Double.parseDouble(playerString[4]),Double.parseDouble(playerString[5]));
                 player.setLocation(location);
                 players.add(player);
             }
@@ -163,16 +157,19 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         player1.setTime(1000);
         player1.setLevel(Level.EASY);
         player1.setLocation(new LatLng(32.120045,34.808768));
+        player1.setAddress("עלומים 25 תל אביב ישראל");
         Player player2=new Player();
         player2.setName("Player2");
         player2.setTime(2000);
         player2.setLevel(Level.MEDIUM);
         player2.setLocation(new LatLng(32.137877,34.804383));
+        player2.setAddress("מתחם פי גלילות רמת השרון ישראל");
         Player player3=new Player();
         player3.setName("Player3");
         player3.setTime(3000);
         player3.setLevel(Level.HARD);
         player3.setLocation(new LatLng(32.137088,34.798669));
+        player3.setAddress("נמיר 301 תל אביב יפו ישראל");
         players.add(player1);
         players.add(player2);
         players.add(player3);
@@ -243,8 +240,16 @@ public class Menu extends TabActivity implements OnTabChangeListener{
     public LatLng getGameLocation() {
         return gameLocation;
     }
+
     public Point getScreenSize() {
         return screenSize;
     }
 
+    public LocationService getLocationService() {
+        return locationService;
+    }
+
+    public void setLocationService(LocationService locationService) {
+        this.locationService = locationService;
+    }
 }

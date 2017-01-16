@@ -4,6 +4,7 @@ import android.widget.Button;
 
 public class Box {
     private int num;
+    private int oldNum;
     private boolean flag;
     private Button boxButton;
     private boolean open;
@@ -57,5 +58,13 @@ public class Box {
 
     public void setPosition(Position position) {
         this.position = position;
+    }
+
+    public int getOldNum() {
+        return oldNum;
+    }
+
+    public void setOldNum(int oldNum) {
+        this.oldNum = oldNum;
     }
 }

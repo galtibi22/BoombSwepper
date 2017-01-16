@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -17,6 +18,9 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+
+import java.util.List;
+import java.util.Locale;
 
 import tbject.com.bombswepper.activity.Menu;
 
@@ -191,6 +195,24 @@ public class LocationService extends Service implements LocationListener {
 
         // Showing Alert Message
         alertDialog.show();
+    }
+
+    public String getAddress(LatLng location){
+        Geocoder geocoder;
+        String fullAddress;
+        List<android.location.Address> addresses;
+        geocoder = new Geocoder(Menu.getInstance(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+            fullAddress= addresses.get(0).getAddressLine(0)+ " "+ addresses.get(0).getLocality()+ " "+ addresses.get(0).getCountryName();
+        } catch (Exception e) {
+            Log.w("Address","Cannot get spesific address for location:"+ location.latitude+", "+location.longitude );
+            fullAddress="Address is not avibility to this location("+location.latitude+" "+location.longitude+")";
+        }
+        return fullAddress;
+
+
+
     }
 
     /**

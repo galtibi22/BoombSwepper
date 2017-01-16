@@ -8,6 +8,7 @@ public class Player{
     private Level level;
     private Integer time;
     private LatLng location;
+    private String address;
 
     public Level getLevel() {
         return level;
@@ -43,7 +44,15 @@ public class Player{
 
 
     public String toString(){
-        return this.getName()+","+this.getTime()+","+this.getLevel()+","+this.getLocation().latitude +" ," +this.getLocation().longitude;
+        return this.getName()+","+this.getTime()+","+this.getLevel()+","+this.address+ ","+ this.getLocation().latitude +" ," +this.getLocation().longitude;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
 

@@ -5,9 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Collections;
 
@@ -24,6 +23,7 @@ import tbject.com.bombswepper.PlayerComparator;
 import tbject.com.bombswepper.R;
 import tbject.com.bombswepper.pojo.Box;
 import tbject.com.bombswepper.pojo.Player;
+import tbject.com.bombswepper.services.AccelerometerService;
 import tbject.com.bombswepper.services.TimerService;
 
 
@@ -35,17 +35,55 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
     private TextView timerValue;
     private TextView totalFlagValue;
     private boolean lost;
-
+    private TextView newBombValue;
+    private Toast toast;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         instance=this;
-        setContentView(R.layout.activity_game_table);
+        toast=new Toast(this);
+        setContentView(R.layout.activity_game_instance);
         initGameTable();
         initBarGame();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        //Check device supported Accelerometer senssor or not
+        if (AccelerometerService.isSupported(this)) {
+            //Start Accelerometer Listening
+            AccelerometerService.startListening(this);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        //Check device supported Accelerometer senssor or not
+        if (AccelerometerService.isListening()) {
+            //Start Accelerometer Listening
+            AccelerometerService.stopListening();
+        }
+        if (alertDialog!=null)
+            alertDialog.dismiss();
+        timerService.stopTimer();
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //Check device supported Accelerometer senssor or not
+        if (AccelerometerService.isListening()) {
+            //Start Accelerometer Listening
+            AccelerometerService.stopListening();
+        }
+
+    }
+
+/*
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK
                 && event.getRepeatCount() == 0) {
@@ -55,6 +93,7 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
         return super.onKeyDown(keyCode, event);
     }
 
+*/
 
     private void initBarGame() {
         TextView level = (TextView) findViewById(R.id.level_value);
@@ -69,6 +108,7 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
     private void initGameTable() {
         boardManager = new BoardManager();
         boardManager.initBoard(Menu.getInstance().getGameLevel());
+        newBombValue= (TextView) findViewById(R.id.newBombsValue);
         TableLayout tableLayout = (TableLayout) findViewById(R.id.game_table);
         for (int y = 0; y < boardManager.getBoard().getRows(); y++) {
             TableRow tableRow = new TableRow(this);
@@ -208,8 +248,10 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
         player.setLevel(Menu.getInstance().getGameLevel());
         player.setName(name.getText().toString());
         player.setTime(timeOfGameSec);
-        player.setLocation(Menu.getInstance().getGameLocation());
-        Menu.getInstance().getPlayers().remove( Menu.getInstance().getPlayers().size()-1);
+        player.setLocation(Menu.getInstance().getLocationService().getLocation());
+        player.setAddress(Menu.getInstance().getLocationService().getAddress(player.getLocation()));
+        if (Menu.getInstance().getPlayers().size()==Menu.NUM_OF_PLAYERS)
+            Menu.getInstance().getPlayers().remove( Menu.getInstance().getPlayers().size()-1);
         Menu.getInstance().getPlayers().add(player);
         Collections.sort(Menu.getInstance().getPlayers(),new PlayerComparator());
     }
@@ -222,14 +264,13 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
     }
 
     int numOfBomb=0;
-    private final double INTERVAL=1;
-    private final double DEVIIATION=1.3;
+    private final double INTERVAL=1.5;
+    private final double DEVIIATION=1.8;
     float startX;
     float startY;
     float startZ;
     float lastX;
     float lastY;
-    float lastZ;
     boolean first=true;
 
     @Override
@@ -240,55 +281,47 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
         }
         if (x >  startX)
             if (x> lastX+INTERVAL) {
-                numOfBomb++;
                 lastX=x;
-                Log.w("Pos","add bomb");
-                Log.w("Pos","Num of bomb="+numOfBomb);
+                boardManager.addBombAndCloseBox();
             }else if (x<lastX-INTERVAL/DEVIIATION){
-                if (numOfBomb>0)
-                    numOfBomb--;
                 lastX=x;
-                Log.w("Pos","remove bomb");
-                Log.w("Pos","Num of bomb="+numOfBomb);
+                boardManager.removeBombAndOpenBox();
             }
         if (x < startX)
             if (x< lastX-INTERVAL) {
-                numOfBomb++;
                 lastX=x;
-                Log.w("Pos","add bomb");
-                Log.w("Pos","Num of bomb="+numOfBomb);
+                boardManager.addBombAndCloseBox();
             }else if (x>lastX+INTERVAL/DEVIIATION){
-                if (numOfBomb>0)
-                    numOfBomb--;
+                boardManager.removeBombAndOpenBox();
                 lastX=x;
-                Log.w("Pos","remove bomb");
-                Log.w("Pos","Num of bomb="+numOfBomb);
             }
         if (y > INTERVAL + startY)
             if (y> lastY+INTERVAL) {
-                numOfBomb++;
                 lastY=y;
-                Log.w("Pos","add bomb");
-                Log.w("Pos","Num of bomb="+numOfBomb);
+                boardManager.addBombAndCloseBox();
             }else if (y<lastY-INTERVAL/DEVIIATION){
-                numOfBomb--;
                 lastY=y;
-                Log.w("Pos","remove bomb");
-                Log.w("Pos","Num of bomb="+numOfBomb);
+                boardManager.removeBombAndOpenBox();
             }
         if (y < startY-INTERVAL)
             if (y< lastY-INTERVAL) {
-                numOfBomb++;
                 lastY=y;
-                Log.w("Pos","add bomb");
-                Log.w("Pos","Num of bomb="+numOfBomb);
+                boardManager.addBombAndCloseBox();
             }else if (y>lastY+INTERVAL/DEVIIATION) {
-                numOfBomb--;
                 lastY = y;
-                Log.w("Pos", "remove bomb");
-                Log.w("Pos", "Num of bomb=" + numOfBomb);
+                boardManager.removeBombAndOpenBox();
             }
     }
+
+    public void showAToast (String st){ //"Toast toast" is declared in the class
+        try{ toast.getView().isShown();     // true if visible
+            toast.setText(st);
+        } catch (Exception e) {         // invisible if exception
+            toast = Toast.makeText(this, st, Toast.LENGTH_SHORT);
+        }
+        toast.show();  //finally display it
+    }
+
 
     public static GameInstance getInstance(){
         return instance;
@@ -311,4 +344,11 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
     }
 
 
+    public TextView getNewBombValue() {
+        return newBombValue;
+    }
+
+    public void setNewBombValue(TextView newBombValue) {
+        this.newBombValue = newBombValue;
+    }
 }

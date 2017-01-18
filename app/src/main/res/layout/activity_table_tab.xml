@@ -24,10 +24,9 @@
     <ScrollView
         android:id="@+id/scrollview"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="45dp"
-        android:layout_alignParentStart="true"
-        >
+        android:layout_height="match_parent"
+        android:layout_marginTop="36dp"
+        android:layout_alignParentStart="true">
     <TableLayout
         android:id="@+id/score_table"
         android:stretchColumns="*"
@@ -35,11 +34,10 @@
         android:padding="2dp"
         android:layout_width="match_parent"
         android:layout_weight="1"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginTop="65dp"
         android:layout_gravity="center"
         android:layout_alignParentStart="true">
-       <!-- android:layout_marginTop="36dp"-->
 
         <TableRow
             android:layout_weight="1"

@@ -175,11 +175,46 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         player4.setLevel(Level.EASY);
         player4.setLocation(new LatLng(32.093754, 34.874269));
         player4.setAddress("Prisoners of Zion 11 Petah Tikva\nIsrael");
+        Player player5=new Player();
+        player5.setName("Player5");
+        player5.setTime(211);
+        player5.setLevel(Level.MEDIUM);
+        player5.setLocation(new LatLng(32.093732, 34.874212));
+        player5.setAddress("Prisoners of Zion 13 Petah Tikva\nIsrael");
+        Player player6=new Player();
+        player6.setName("Player6");
+        player6.setTime(11);
+        player6.setLevel(Level.MEDIUM);
+        player6.setLocation(new LatLng(32.093714, 34.874212));
+        player6.setAddress("Prisoners of Zion 56 Petah Tikva\nIsrael");
+        Player player7=new Player();
+        player7.setName("Player7");
+        player7.setTime(20);
+        player7.setLevel(Level.HARD);
+        player7.setLocation(new LatLng(32.137821,34.804311));
+        player7.setAddress("Compound according rolls Ramat Hasharon \nIsrael");
+        Player player8=new Player();
+        player8.setName("Player8");
+        player8.setTime(321);
+        player8.setLevel(Level.EASY);
+        player8.setLocation(new LatLng(32.093721, 34.872269));
+        player8.setAddress("Prisoners of Zion 2 Petah Tikva\nIsrael");
+        Player player9=new Player();
+        player9.setName("Player9");
+        player9.setTime(321);
+        player9.setLevel(Level.EASY);
+        player9.setLocation(new LatLng(32.493721, 34.872269));
+        player9.setAddress("Prisoners of Zion 6432 Petah Tikva\nIsrael");
         players.add(player1);
         players.add(player2);
         players.add(player3);
         players.add(player4);
-
+        players.add(player5);
+        players.add(player6);
+        players.add(player7);
+        players.add(player8);
+        players.add(player9);
+        players.add(player7);
     }
     /**
      saveDataFile method - save list of player to data file with "," sprate

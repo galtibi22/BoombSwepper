@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -63,7 +64,6 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
         super.onStop();
         //Check device supported Accelerometer senssor or not
         if (AccelerometerService.isListening()) {
-            //Start Accelerometer Listening
             AccelerometerService.stopListening();
         }
         if (alertDialog!=null)
@@ -72,15 +72,16 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
 
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        //Check device supported Accelerometer senssor or not
-        if (AccelerometerService.isListening()) {
-            //Start Accelerometer Listening
-            AccelerometerService.stopListening();
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (AccelerometerService.isListening()) {
+                AccelerometerService.stopListening();
+            }
+            closeGameInstance();
+            return true;
         }
 
+        return super.onKeyDown(keyCode, event);
     }
 
 /*
@@ -156,6 +157,12 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
             name.setGravity(Gravity.LEFT);
             name.setBackground(getResources().getDrawable(R.drawable.inputname));
             name.setMinWidth(130);
+            name.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    name.setText("");
+                }
+            });
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setGravity(Gravity.LEFT);
@@ -196,6 +203,9 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
     }
 
     private LinearLayout initNewGameRequestLayout(){
+        if (AccelerometerService.isListening()) {
+            AccelerometerService.stopListening();
+        }
         LinearLayout linearLayout=new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         TextView newGameMessage = new TextView(this);
@@ -209,7 +219,7 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
         yes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (name != null && !name.getText().toString().equals("name") && !name.getText().toString().isEmpty() )
+                if (name != null && !name.getText().toString().equals("name") && !name.getText().toString().trim().isEmpty() )
                     addNewPlayer();
                 closeGameInstance();
                 Intent intent = new Intent(GameInstance.this, GameInstance.class);
@@ -222,7 +232,7 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
         no.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (name != null && !name.getText().toString().equals("name"))
+                if (name != null && !name.getText().toString().equals("name") && !name.getText().toString().trim().isEmpty())
                     addNewPlayer();
                 closeGameInstance();
             }
@@ -254,6 +264,7 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
             Menu.getInstance().getPlayers().remove( Menu.getInstance().getPlayers().size()-1);
         Menu.getInstance().getPlayers().add(player);
         Collections.sort(Menu.getInstance().getPlayers(),new PlayerComparator());
+       // Menu.getInstance().saveDataFile();
     }
 
     private void closeGameInstance() {
@@ -313,14 +324,7 @@ public class GameInstance extends CommonActivity implements AccelerometerListene
             }
     }
 
-    public void showAToast (String st){ //"Toast toast" is declared in the class
-        try{ toast.getView().isShown();     // true if visible
-            toast.setText(st);
-        } catch (Exception e) {         // invisible if exception
-            toast = Toast.makeText(this, st, Toast.LENGTH_SHORT);
-        }
-        toast.show();  //finally display it
-    }
+
 
 
     public static GameInstance getInstance(){

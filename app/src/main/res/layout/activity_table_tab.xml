@@ -8,7 +8,7 @@
     android:paddingLeft="1dp"
     android:paddingRight="1dp"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="tbject.com.bombswepper.activity.tableTab">
+    tools:context="tbject.com.bombswepper.activity.TableTab">
 
     <TextView
         android:text="WINNERS"
@@ -18,19 +18,28 @@
         android:textSize="20sp"
         android:textColor="#0D58CD"
         android:textStyle="normal|bold"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
 
+    <ScrollView
+        android:id="@+id/scrollview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="45dp"
+        android:layout_alignParentStart="true"
+        >
     <TableLayout
-        android:id="@+id/score_table_layout"
+        android:id="@+id/score_table"
         android:stretchColumns="*"
         android:background="#000000"
         android:padding="2dp"
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="wrap_content"
+        android:layout_marginTop="65dp"
         android:layout_gravity="center"
-        android:layout_marginTop="31dp"
-        >
+        android:layout_alignParentStart="true">
+       <!-- android:layout_marginTop="36dp"-->
 
         <TableRow
             android:layout_weight="1"
@@ -43,7 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/table_score_name_tit"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="normal|bold"
                 android:textAlignment="center" />
 
@@ -52,7 +61,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="normal|bold"
                 android:textAlignment="center" />
 
@@ -61,7 +70,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/table_score_time_tit"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="normal|bold"
                 android:textAlignment="center" />
             <TextView
@@ -69,12 +78,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/table_score_address_tit"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="normal|bold"
                 android:textAlignment="center" />
 
-        </TableRow>
-
-    </TableLayout>
-
+            </TableRow>
+        </TableLayout>
+    </ScrollView>
 </RelativeLayout>

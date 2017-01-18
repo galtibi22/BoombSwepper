@@ -230,7 +230,7 @@ public class BoardManager {
                 boxAddBombs.add(box);
                 successToAddBomb = true;
                 GameInstance.getInstance().getNewBombValue().setText(boxAddBombs.size()+"");
-                GameInstance.getInstance().showAToast( "Please return to original position.");
+              ToastManager.showAToast( "Please return to original position.");
                 getBoard().setBombs(getBoard().getBombs()+1);
             }
         }
@@ -253,7 +253,7 @@ public class BoardManager {
             box.setNum(box.getOldNum());
             boxAddBombs.remove(boxAddBombs.size()-1);
             GameInstance.getInstance().getNewBombValue().setText(boxAddBombs.size()+"");
-            GameInstance.getInstance().showAToast("Good you start return to original position.");
+            ToastManager.showAToast("Good you start return to original position.");
             getBoard().setBombs(getBoard().getBombs()-1);
         }
         if (boxClosed.size()>0){

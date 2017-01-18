@@ -10,12 +10,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import tbject.com.bombswepper.R;
+import tbject.com.bombswepper.ToastManager;
 import tbject.com.bombswepper.pojo.Player;
 
-public class MapsTab extends FragmentActivity implements OnMapReadyCallback {
+public class MapsTab extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
 
@@ -41,6 +43,7 @@ public class MapsTab extends FragmentActivity implements OnMapReadyCallback {
         //insertPlayersToMaps
         mMap = googleMap;
         mMap.clear();
+        mMap.setOnMarkerClickListener(this);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -48,11 +51,13 @@ public class MapsTab extends FragmentActivity implements OnMapReadyCallback {
         googleMap.getUiSettings().setMyLocationButtonEnabled(true);
         googleMap.getUiSettings().setCompassEnabled(true);
         MarkerOptions markerOptions=null;
-        for (Player player : Menu.getInstance().getPlayers()) {
+        for (int i=0;i<Menu.getInstance().getPlayers().size();i++){
+            Player player=Menu.getInstance().getPlayers().get(i);
             markerOptions = new MarkerOptions();
             markerOptions.position(player.getLocation());
             markerOptions.title(player.getName());
-            markerOptions.snippet("Time:" +player.getTime()+"\nAddress:"+ player.getAddress());
+            markerOptions.snippet("Time:" +player.getTime());
+            markerOptions.zIndex(i);
             mMap.addMarker(markerOptions);
         }
 
@@ -61,4 +66,9 @@ public class MapsTab extends FragmentActivity implements OnMapReadyCallback {
     }
 
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        ToastManager.showAToast("Address:" +Menu.getInstance().getPlayers().get((int)marker.getZIndex()).getAddress());
+        return false;
+    }
 }

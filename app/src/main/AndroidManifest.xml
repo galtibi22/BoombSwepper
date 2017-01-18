@@ -24,7 +24,7 @@
         </activity>
         <activity android:name=".activity.GameInstance"
             android:screenOrientation="portrait"/>
-        <activity android:name=".activity.tableTab"
+        <activity android:name=".activity.TableTab"
             android:screenOrientation="portrait"/>
         <activity android:name=".activity.Menu"
             android:screenOrientation="portrait"/>

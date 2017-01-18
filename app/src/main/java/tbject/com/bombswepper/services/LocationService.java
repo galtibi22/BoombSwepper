@@ -56,62 +56,64 @@ public class LocationService extends Service implements LocationListener {
 
     public LatLng getLocation() {
         try {
-            locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
-            //check permission to location
-            if (!(ActivityCompat.checkSelfPermission(Menu.getInstance(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(Menu.getInstance(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)){
+            locationManager = (LocationManager) mContext
+                    .getSystemService(LOCATION_SERVICE);
 
-                // getting GPS status
-                isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                // getting network status
-                isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-                if (!isGPSEnabled && !isNetworkEnabled) {
-                    // no network provider is enabled
-                } else {
-                    this.canGetLocation = true;
-                    // if GPS Enabled get lat/long using GPS Services
-                    if (isGPSEnabled) {
-                        if (location == null) {
-                            locationManager.requestLocationUpdates(
-                                    LocationManager.GPS_PROVIDER,
-                                    MIN_TIME_BW_UPDATES,
-                                    MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+            // getting GPS status
+            isGPSEnabled = locationManager
+                    .isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-                            Log.d("GPS Enabled", "GPS Enabled");
-                            if (locationManager != null) {
-                                location = locationManager
-                                        .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            // getting network status
+            isNetworkEnabled = locationManager
+                    .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-                                if (location != null) {
-                                    latitude = location.getLatitude();
-                                    longitude = location.getLongitude();
-                                }
-                            }
-                        }
-                    }
-                    // if gps not working get location from Network Provider
-                    if (isNetworkEnabled && !isGPSEnabled) {
+            if (!isGPSEnabled && !isNetworkEnabled) {
+                // no network provider is enabled
+            } else {
+                this.canGetLocation = true;
+                if (ActivityCompat.checkSelfPermission(Menu.getInstance(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(Menu.getInstance(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                }
+
+                // if GPS Enabled get lat/long using GPS Services
+                if (isGPSEnabled) {
+                    if (location == null) {
                         locationManager.requestLocationUpdates(
-                                LocationManager.NETWORK_PROVIDER,
+                                LocationManager.GPS_PROVIDER,
                                 MIN_TIME_BW_UPDATES,
                                 MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-
-                        Log.d("Network", "Network");
+                        Log.d("GPS", "GPS Enabled");
                         if (locationManager != null) {
                             location = locationManager
-                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                            }
+                                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
                         }
                     }
                 }
+                if (isNetworkEnabled && location==null) {
+                    locationManager.requestLocationUpdates(
+                            LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES,
+                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        Log.d("Network", "Network Enabled");
+                        if (locationManager != null) {
+                            location = locationManager
+                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                            if (location==null)
+                                locationManager.requestLocationUpdates(
+                                    LocationManager.NETWORK_PROVIDER,
+                                    MIN_TIME_BW_UPDATES,
+                                    MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        }
+                    }
+
+                    }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        if (location==null)
+            return null;
         LatLng loc=new LatLng(location.getLatitude(),location.getLongitude());
         return loc;
     }
@@ -204,10 +206,10 @@ public class LocationService extends Service implements LocationListener {
         geocoder = new Geocoder(Menu.getInstance(), Locale.getDefault());
         try {
             addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-            fullAddress= addresses.get(0).getAddressLine(0)+ " "+ addresses.get(0).getLocality()+ " "+ addresses.get(0).getCountryName();
+            fullAddress= addresses.get(0).getAddressLine(0)+ " "+ addresses.get(0).getLocality()+ "\n"+ addresses.get(0).getCountryName();
         } catch (Exception e) {
             Log.w("Address","Cannot get spesific address for location:"+ location.latitude+", "+location.longitude );
-            fullAddress="Address is not avibility to this location("+location.latitude+" "+location.longitude+")";
+            fullAddress="Address is not avibility to this location(\n"+location.latitude+" "+location.longitude+")";
         }
         return fullAddress;
 

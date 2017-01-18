@@ -36,7 +36,6 @@ import tbject.com.bombswepper.services.LocationService;
 
 public class Menu extends TabActivity implements OnTabChangeListener{
     public static final int NUM_OF_PLAYERS=10;
-
     private static Menu instance;
     private ArrayList<Player> players=new ArrayList<>();
     private Level gameLevel;
@@ -56,7 +55,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         instance=this;
         setScreenSize();
         readDataFile();
-        initLocationService();
+        checkLocationPermiton();
         initTabs();
 
     }
@@ -83,7 +82,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         Intent intent;
 
         // Create  Intents to launch an Activity for the tab (to be reused)
-        intent = new Intent().setClass(this, tableTab.class);
+        intent = new Intent().setClass(this, TableTab.class);
         spec = tabHost.newTabSpec("First").setIndicator("Table")
                 .setContent(intent);
         //Add intent to tab
@@ -98,14 +97,13 @@ public class Menu extends TabActivity implements OnTabChangeListener{
     }
 
     public void initGameInstance(View view){
-        Button button =(Button)view;
-        gameLevel=Level.valueOf(button.getText().toString());
-        gameLocation=getCurrentLocation();
-        if (gameLocation!=null){
+        if (getCurrentLocation() != null) {
+            Button button = (Button) view;
+            gameLevel = Level.valueOf(button.getText().toString());
             Intent intent = new Intent(Menu.getInstance(), GameInstance.class);
             startActivity(intent);
         }
-    }
+        }
 
     private void setScreenSize(){
         Display display = getWindowManager().getDefaultDisplay();
@@ -115,13 +113,14 @@ public class Menu extends TabActivity implements OnTabChangeListener{
 
     public LatLng getCurrentLocation(){
         locationService = new LocationService(this);
+        LatLng location=null;
         // check if GPS enabled
         if(locationService.canGetLocation()){
-            return locationService.getLocation();
+            location=locationService.getLocation();
         }else{
             locationService.showSettingsAlert();
-            return null;
         }
+        return location;
     }
     /**
      * readDataFile method - read data file and create list of players;
@@ -138,7 +137,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
                 player.setName(playerString[0]);
                 player.setTime(Integer.parseInt(playerString[1]));
                 player.setLevel(Level.valueOf(playerString[2]));
-                player.setAddress(playerString[3]);
+                player.setAddress(playerString[3].replaceAll("@","\n"));
                 LatLng location=new LatLng(Double.parseDouble(playerString[4]),Double.parseDouble(playerString[5]));
                 player.setLocation(location);
                 players.add(player);
@@ -157,32 +156,40 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         player1.setTime(1000);
         player1.setLevel(Level.EASY);
         player1.setLocation(new LatLng(32.120045,34.808768));
-        player1.setAddress("עלומים 25 תל אביב ישראל");
+        player1.setAddress("Alumin 25 \nIsrael");
         Player player2=new Player();
         player2.setName("Player2");
         player2.setTime(2000);
         player2.setLevel(Level.MEDIUM);
         player2.setLocation(new LatLng(32.137877,34.804383));
-        player2.setAddress("מתחם פי גלילות רמת השרון ישראל");
+        player2.setAddress("Compound according rolls Ramat Hasharon \nIsrael");
         Player player3=new Player();
         player3.setName("Player3");
         player3.setTime(3000);
         player3.setLevel(Level.HARD);
         player3.setLocation(new LatLng(32.137088,34.798669));
-        player3.setAddress("נמיר 301 תל אביב יפו ישראל");
+        player3.setAddress("Namir 301 Tel Aviv\nIsrael");
+        Player player4=new Player();
+        player4.setName("Player4");
+        player4.setTime(3021);
+        player4.setLevel(Level.EASY);
+        player4.setLocation(new LatLng(32.093754, 34.874269));
+        player4.setAddress("Prisoners of Zion 11 Petah Tikva\nIsrael");
         players.add(player1);
         players.add(player2);
         players.add(player3);
+        players.add(player4);
 
     }
     /**
      saveDataFile method - save list of player to data file with "," sprate
      */
-    private void saveDataFile(){
+    public void saveDataFile(){
         try {
             FileOutputStream dataFile = openFileOutput(DATA_FILE, Context.MODE_PRIVATE);
+            dataFile.flush();
             for (Player player:players){
-                dataFile.write((player+"\n").getBytes());
+                dataFile.write((player.toString().replaceAll("\n","@")+"\n").getBytes());
             }
             dataFile.close();
         } catch (IOException e) {
@@ -209,7 +216,7 @@ public class Menu extends TabActivity implements OnTabChangeListener{
         }
     }
 
-    private void initLocationService(){
+    private void checkLocationPermiton(){
         int REQUEST_CODE_PERMISSION = 2;
         try {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)

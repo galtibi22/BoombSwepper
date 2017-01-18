@@ -2,7 +2,7 @@ package tbject.com.bombswepper.pojo;
 
 
 public enum Level {
-    EASY(1,10),
+    EASY(5,10),
     MEDIUM(10,10),
     HARD(10,5);
 
